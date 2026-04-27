@@ -544,7 +544,7 @@ export default function Careers() {
                 type="submit"
                 size="lg"
                 className="w-full"
-                disabled={loading}
+                disabled={loading || !acceptedTerms}
               >
                 {loading ? "Processing..." : `Pay ₹${APPLICATION_FEE} & Submit Application`}
               </Button>
