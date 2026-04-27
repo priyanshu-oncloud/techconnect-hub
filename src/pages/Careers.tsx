@@ -99,6 +99,8 @@ const formatName = (name: string) => {
 export default function Careers() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
