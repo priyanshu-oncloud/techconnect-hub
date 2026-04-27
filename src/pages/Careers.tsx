@@ -28,6 +28,29 @@ import {
   TrendingUp
 } from "lucide-react";
 
+/* ---------------- RAZORPAY CONFIG ---------------- */
+// TODO: Replace with your actual Razorpay Key ID (publishable, safe in frontend)
+const RAZORPAY_KEY_ID = "rzp_test_XXXXXXXXXXXXXX";
+const APPLICATION_FEE = 99; // ₹99
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
+/* Load Razorpay Checkout script dynamically */
+const loadRazorpayScript = (): Promise<boolean> => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) return resolve(true);
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 /* ---------------- BENEFITS ---------------- */
 
 const benefits = [
@@ -77,7 +100,73 @@ export default function Careers() {
     message: "",
   });
 
-  /* ---------------- SUBMIT ---------------- */
+  /* ---------------- ACTUAL SUBMISSION (after payment) ---------------- */
+
+  const submitApplication = async (paymentId: string) => {
+    try {
+      setLoading(true);
+
+      /* ---------- 1️⃣ UPLOAD RESUME ---------- */
+      const fileName = `${Date.now()}_${formData.resume!.name}`;
+      const resumeRef = storageRef(storage, `resumes/${fileName}`);
+      await uploadBytes(resumeRef, formData.resume!);
+      const resumeUrl = await getDownloadURL(resumeRef);
+
+      /* ---------- 2️⃣ SAVE TO DATABASE ---------- */
+      const submission = {
+        name: formatName(formData.name),
+        email: formData.email,
+        phone: formData.phone,
+        position: formData.position,
+        experience: formData.experience,
+        resumeName: formData.resume!.name,
+        resumeUrl,
+        message: formData.message,
+        paymentId,
+        amountPaid: APPLICATION_FEE,
+        paymentStatus: "paid",
+        submittedAt: new Date().toISOString(),
+      };
+
+      await push(dbRef(database, "careers_applications"), submission);
+
+      /* ---------- 3️⃣ SEND EMAIL ---------- */
+      try {
+        await axios.post(
+          "https://us-central1-nestgen-solutions.cloudfunctions.net/sendCareerConfirmation",
+          { ...submission }
+        );
+      } catch (emailError) {
+        console.warn("Email failed but data saved:", emailError);
+      }
+
+      toast({
+        title: "Application Submitted!",
+        description: `Payment successful (₹${APPLICATION_FEE}). Your application has been received.`,
+      });
+
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        position: "",
+        experience: "",
+        resume: null,
+        message: "",
+      });
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Submission Failed",
+        description: "Payment received but submission failed. Please contact support with your payment ID.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ---------------- HANDLE SUBMIT (open Razorpay first) ---------------- */
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,70 +185,76 @@ export default function Careers() {
       return;
     }
 
-    try {
-      setLoading(true);
-
-      /* ---------- 1️⃣ UPLOAD RESUME ---------- */
-      const fileName = `${Date.now()}_${formData.resume.name}`;
-      const resumeRef = storageRef(storage, `resumes/${fileName}`);
-      await uploadBytes(resumeRef, formData.resume);
-      const resumeUrl = await getDownloadURL(resumeRef);
-
-      /* ---------- 2️⃣ SAVE TO DATABASE ---------- */
-      const submission = {
-        name: formatName(formData.name), // ✅ formatted here
-        email: formData.email,
-        phone: formData.phone,
-        position: formData.position,
-        experience: formData.experience,
-        resumeName: formData.resume.name,
-        resumeUrl,
-        message: formData.message,
-        submittedAt: new Date().toISOString(),
-      };
-
-      await push(dbRef(database, "careers_applications"), submission);
-
-      /* ---------- 3️⃣ SEND EMAIL ---------- */
-      try {
-        await axios.post(
-          "https://us-central1-nestgen-solutions.cloudfunctions.net/sendCareerConfirmation",
-          {
-            ...submission,
-          }
-        );
-      } catch (emailError) {
-        console.warn("Email failed but data saved:", emailError);
-      }
-
-      /* ---------- SUCCESS ---------- */
+    /* ---------- LOAD RAZORPAY ---------- */
+    setLoading(true);
+    const ok = await loadRazorpayScript();
+    if (!ok) {
+      setLoading(false);
       toast({
-        title: "Application Submitted!",
-        description: "Your application has been received successfully.",
-      });
-
-      /* ---------- RESET ---------- */
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        position: "",
-        experience: "",
-        resume: null,
-        message: "",
-      });
-
-    } catch (error) {
-      console.error(error);
-      toast({
-        title: "Submission Failed",
-        description: "Please try again later",
+        title: "Payment Error",
+        description: "Failed to load Razorpay. Check your internet connection.",
         variant: "destructive",
       });
-    } finally {
+      return;
+    }
+
+    /* ---------- OPEN CHECKOUT ---------- */
+    const options = {
+      key: RAZORPAY_KEY_ID,
+      amount: APPLICATION_FEE * 100, // paise
+      currency: "INR",
+      name: "Nestgen Solutions",
+      description: `Application Fee - ${formData.position || "Internship"}`,
+      image: "/placeholder.svg",
+      handler: function (response: any) {
+        // Payment success → auto-submit
+        submitApplication(response.razorpay_payment_id);
+      },
+      prefill: {
+        name: formData.name,
+        email: formData.email,
+        contact: formData.phone,
+      },
+      notes: {
+        position: formData.position,
+      },
+      theme: {
+        color: "#6366f1",
+      },
+      modal: {
+        ondismiss: () => {
+          setLoading(false);
+          toast({
+            title: "Payment Cancelled",
+            description: "Your application was not submitted.",
+            variant: "destructive",
+          });
+        },
+      },
+    };
+
+    try {
+      const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", function (response: any) {
+        setLoading(false);
+        toast({
+          title: "Payment Failed",
+          description: response.error?.description || "Please try again.",
+          variant: "destructive",
+        });
+      });
+      rzp.open();
+    } catch (err) {
+      console.error(err);
       setLoading(false);
+      toast({
+        title: "Payment Error",
+        description: "Could not open payment window.",
+        variant: "destructive",
+      });
     }
   };
+
 
   /* ---------------- UI ---------------- */
 
@@ -291,7 +386,7 @@ export default function Careers() {
                 className="w-full"
                 disabled={loading}
               >
-                {loading ? "Uploading..." : "Submit Application"}
+                {loading ? "Processing..." : `Pay ₹${APPLICATION_FEE} & Submit Application`}
               </Button>
 
             </form>
