@@ -10,6 +10,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 
 import {
@@ -89,6 +99,8 @@ const formatName = (name: string) => {
 export default function Careers() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -180,6 +192,15 @@ export default function Careers() {
       toast({
         title: "Invalid Phone Number",
         description: "Phone number must be exactly 10 digits",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!acceptedTerms) {
+      toast({
+        title: "Accept Terms & Conditions",
+        description: "Please read and accept the Terms & Conditions to continue.",
         variant: "destructive",
       });
       return;
@@ -380,11 +401,150 @@ export default function Careers() {
                 }
               />
 
+              {/* TERMS & CONDITIONS */}
+              <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-4">
+                <Checkbox
+                  id="accept-terms"
+                  checked={acceptedTerms}
+                  onCheckedChange={(c) => setAcceptedTerms(c === true)}
+                  className="mt-1"
+                />
+                <label htmlFor="accept-terms" className="text-sm leading-relaxed cursor-pointer">
+                  I have read and agree to the{" "}
+                  <Dialog open={termsOpen} onOpenChange={setTermsOpen}>
+                    <DialogTrigger asChild>
+                      <button
+                        type="button"
+                        className="text-primary underline font-medium hover:opacity-80"
+                      >
+                        Terms & Conditions
+                      </button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>Internship Program — Terms & Conditions</DialogTitle>
+                        <DialogDescription>
+                          Please review the terms before paying the ₹{APPLICATION_FEE} registration fee.
+                        </DialogDescription>
+                      </DialogHeader>
+
+                      <ScrollArea className="max-h-[60vh] pr-4">
+                        <div className="space-y-5 text-sm leading-relaxed">
+                          <p className="text-muted-foreground">
+                            This document outlines the terms and conditions for participation in the
+                            Nestgen Solutions Internship Program.
+                          </p>
+
+                          <div>
+                            <h4 className="font-semibold mb-1">1. Registration Fee</h4>
+                            <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                              <li>A one-time non-refundable fee of ₹99 is required to enroll in the internship program.</li>
+                              <li>This fee is charged for administrative, onboarding, and training resources.</li>
+                            </ul>
+                          </div>
+
+                          <div>
+                            <h4 className="font-semibold mb-1">2. Internship Nature</h4>
+                            <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                              <li>This is a skill-based internship designed for learning and practical exposure.</li>
+                              <li>The internship may be remote or hybrid depending on project requirements.</li>
+                            </ul>
+                          </div>
+
+                          <div>
+                            <h4 className="font-semibold mb-1">3. Duration</h4>
+                            <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                              <li>The internship duration ranges from 1 to 3 months (flexible).</li>
+                            </ul>
+                          </div>
+
+                          <div>
+                            <h4 className="font-semibold mb-1">4. Deliverables</h4>
+                            <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                              <li>Interns must complete assigned tasks, projects, or reports.</li>
+                              <li>Performance will be evaluated based on quality, consistency, and participation.</li>
+                            </ul>
+                          </div>
+
+                          <div>
+                            <h4 className="font-semibold mb-1">5. Certification</h4>
+                            <p className="text-muted-foreground mb-1">Interns will receive:</p>
+                            <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                              <li>Offer Letter</li>
+                              <li>Internship Completion Certificate</li>
+                              <li>Letter of Recommendation (based on performance)</li>
+                            </ul>
+                          </div>
+
+                          <div>
+                            <h4 className="font-semibold mb-1">6. Attendance & Participation</h4>
+                            <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                              <li>Minimum participation is required to qualify for certification.</li>
+                              <li>Inactive interns may not receive completion benefits.</li>
+                            </ul>
+                          </div>
+
+                          <div>
+                            <h4 className="font-semibold mb-1">7. No Salary Clause</h4>
+                            <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                              <li>This is an unpaid internship focused on learning and experience.</li>
+                            </ul>
+                          </div>
+
+                          <div>
+                            <h4 className="font-semibold mb-1">8. Confidentiality</h4>
+                            <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                              <li>Interns must not share company data, project details, or client information.</li>
+                            </ul>
+                          </div>
+
+                          <div>
+                            <h4 className="font-semibold mb-1">9. Termination</h4>
+                            <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                              <li>The company reserves the right to terminate the internship at any time.</li>
+                            </ul>
+                          </div>
+
+                          <div>
+                            <h4 className="font-semibold mb-1">10. Acceptance</h4>
+                            <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                              <li>By registering and paying ₹99, the intern agrees to all terms mentioned above.</li>
+                            </ul>
+                          </div>
+
+                          <p className="pt-2 font-medium">— Nestgen Solutions</p>
+                        </div>
+                      </ScrollArea>
+
+                      <div className="flex justify-end gap-2 pt-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setTermsOpen(false)}
+                        >
+                          Close
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            setAcceptedTerms(true);
+                            setTermsOpen(false);
+                          }}
+                        >
+                          I Agree
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>{" "}
+                  and the non-refundable ₹{APPLICATION_FEE} registration fee.
+                </label>
+              </div>
+
               <Button
                 type="submit"
                 size="lg"
                 className="w-full"
-                disabled={loading}
+                disabled={loading || !acceptedTerms}
               >
                 {loading ? "Processing..." : `Pay ₹${APPLICATION_FEE} & Submit Application`}
               </Button>
