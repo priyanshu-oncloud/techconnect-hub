@@ -28,6 +28,29 @@ import {
   TrendingUp
 } from "lucide-react";
 
+/* ---------------- RAZORPAY CONFIG ---------------- */
+// TODO: Replace with your actual Razorpay Key ID (publishable, safe in frontend)
+const RAZORPAY_KEY_ID = "rzp_test_XXXXXXXXXXXXXX";
+const APPLICATION_FEE = 99; // ₹99
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
+/* Load Razorpay Checkout script dynamically */
+const loadRazorpayScript = (): Promise<boolean> => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) return resolve(true);
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 /* ---------------- BENEFITS ---------------- */
 
 const benefits = [
