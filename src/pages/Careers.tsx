@@ -197,6 +197,15 @@ export default function Careers() {
       return;
     }
 
+    if (!acceptedTerms) {
+      toast({
+        title: "Accept Terms & Conditions",
+        description: "Please read and accept the Terms & Conditions to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     /* ---------- LOAD RAZORPAY ---------- */
     setLoading(true);
     const ok = await loadRazorpayScript();
