@@ -386,7 +386,7 @@ export default function Careers() {
                 className="w-full"
                 disabled={loading}
               >
-                {loading ? "Uploading..." : "Submit Application"}
+                {loading ? "Processing..." : `Pay ₹${APPLICATION_FEE} & Submit Application`}
               </Button>
 
             </form>
