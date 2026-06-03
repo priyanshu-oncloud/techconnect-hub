@@ -489,6 +489,58 @@ export default function Careers() {
                 }
               />
 
+              {/* COUPON CODE */}
+              <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold">Have a coupon code?</label>
+                  {appliedCoupon && (
+                    <Badge variant="default">
+                      {appliedCoupon.code} applied
+                    </Badge>
+                  )}
+                </div>
+
+                {!appliedCoupon ? (
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Enter coupon code"
+                      value={couponInput}
+                      onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                      className="uppercase"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={applyCoupon}
+                      disabled={couponLoading || !couponInput.trim()}
+                    >
+                      {couponLoading ? "Checking..." : "Apply"}
+                    </Button>
+                  </div>
+                ) : (
+                  <Button type="button" variant="ghost" size="sm" onClick={removeCoupon}>
+                    Remove coupon
+                  </Button>
+                )}
+
+                <div className="text-sm space-y-1 pt-2 border-t border-border">
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>Registration Fee</span>
+                    <span>₹{APPLICATION_FEE}</span>
+                  </div>
+                  {discount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Discount</span>
+                      <span>− ₹{discount}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between font-bold text-base pt-1">
+                    <span>Total Payable</span>
+                    <span>₹{finalAmount}</span>
+                  </div>
+                </div>
+              </div>
+
               {/* TERMS & CONDITIONS */}
               <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-4">
                 <Checkbox
