@@ -197,12 +197,27 @@ export default function Careers() {
         resumeUrl,
         message: formData.message,
         paymentId,
-        amountPaid: APPLICATION_FEE,
-        paymentStatus: "paid",
+        originalAmount: APPLICATION_FEE,
+        couponCode: appliedCoupon?.code || null,
+        discountApplied: discount,
+        amountPaid: finalAmount,
+        paymentStatus: finalAmount === 0 ? "free" : "paid",
         submittedAt: new Date().toISOString(),
       };
 
       await push(dbRef(database, "careers_applications"), submission);
+
+      /* ---------- 2️⃣b INCREMENT COUPON USAGE ---------- */
+      if (appliedCoupon) {
+        try {
+          await runTransaction(
+            dbRef(database, `coupons/${appliedCoupon.code}/usedCount`),
+            (cur) => (cur || 0) + 1
+          );
+        } catch (e) {
+          console.warn("Coupon counter update failed:", e);
+        }
+      }
 
       /* ---------- 3️⃣ SEND EMAIL ---------- */
       try {
@@ -216,7 +231,9 @@ export default function Careers() {
 
       toast({
         title: "Application Submitted!",
-        description: `Payment successful (₹${APPLICATION_FEE}). Your application has been received.`,
+        description: finalAmount === 0
+          ? `Coupon applied — free registration. Your application has been received.`
+          : `Payment successful (₹${finalAmount}). Your application has been received.`,
       });
 
       setFormData({
@@ -228,6 +245,8 @@ export default function Careers() {
         resume: null,
         message: "",
       });
+      setAppliedCoupon(null);
+      setCouponInput("");
     } catch (error) {
       console.error(error);
       toast({
