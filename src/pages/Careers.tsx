@@ -102,6 +102,68 @@ export default function Careers() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
 
+  /* ---- COUPON STATE ---- */
+  const [couponInput, setCouponInput] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState<null | {
+    code: string;
+    discountType: "flat" | "percent";
+    discountValue: number;
+  }>(null);
+
+  const discount = appliedCoupon
+    ? appliedCoupon.discountType === "flat"
+      ? Math.min(appliedCoupon.discountValue, APPLICATION_FEE)
+      : Math.round((APPLICATION_FEE * appliedCoupon.discountValue) / 100)
+    : 0;
+  const finalAmount = Math.max(0, APPLICATION_FEE - discount);
+
+  const applyCoupon = async () => {
+    const code = couponInput.trim().toUpperCase();
+    if (!code) return;
+    setCouponLoading(true);
+    try {
+      const snap = await get(dbRef(database, `coupons/${code}`));
+      if (!snap.exists()) {
+        toast({ title: "Invalid coupon", variant: "destructive" });
+        return;
+      }
+      const c = snap.val();
+      if (!c.active) {
+        toast({ title: "Coupon is inactive", variant: "destructive" });
+        return;
+      }
+      if (c.expiresAt && new Date(c.expiresAt) < new Date()) {
+        toast({ title: "Coupon expired", variant: "destructive" });
+        return;
+      }
+      if (c.usageLimit && c.usedCount >= c.usageLimit) {
+        toast({ title: "Coupon usage limit reached", variant: "destructive" });
+        return;
+      }
+      setAppliedCoupon({
+        code: c.code,
+        discountType: c.discountType,
+        discountValue: c.discountValue,
+      });
+      toast({ title: "Coupon applied!", description: `${code} — you saved ₹${
+        c.discountType === "flat"
+          ? Math.min(c.discountValue, APPLICATION_FEE)
+          : Math.round((APPLICATION_FEE * c.discountValue) / 100)
+      }` });
+    } catch (e) {
+      console.error(e);
+      toast({ title: "Could not apply coupon", variant: "destructive" });
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponInput("");
+  };
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
