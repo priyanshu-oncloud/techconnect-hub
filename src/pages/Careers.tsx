@@ -686,7 +686,11 @@ export default function Careers() {
                 className="w-full"
                 disabled={loading || !acceptedTerms}
               >
-                {loading ? "Processing..." : `Pay ₹${APPLICATION_FEE} & Submit Application`}
+                {loading
+                  ? "Processing..."
+                  : finalAmount === 0
+                    ? "Submit Application (Free)"
+                    : `Pay ₹${finalAmount} & Submit Application`}
               </Button>
 
             </form>
