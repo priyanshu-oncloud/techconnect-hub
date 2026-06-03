@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 
-import { ref as dbRef, push } from "firebase/database";
+import { ref as dbRef, push, get, runTransaction } from "firebase/database";
 import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 import { database, storage } from "@/firebase";
 
@@ -102,6 +102,68 @@ export default function Careers() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
 
+  /* ---- COUPON STATE ---- */
+  const [couponInput, setCouponInput] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState<null | {
+    code: string;
+    discountType: "flat" | "percent";
+    discountValue: number;
+  }>(null);
+
+  const discount = appliedCoupon
+    ? appliedCoupon.discountType === "flat"
+      ? Math.min(appliedCoupon.discountValue, APPLICATION_FEE)
+      : Math.round((APPLICATION_FEE * appliedCoupon.discountValue) / 100)
+    : 0;
+  const finalAmount = Math.max(0, APPLICATION_FEE - discount);
+
+  const applyCoupon = async () => {
+    const code = couponInput.trim().toUpperCase();
+    if (!code) return;
+    setCouponLoading(true);
+    try {
+      const snap = await get(dbRef(database, `coupons/${code}`));
+      if (!snap.exists()) {
+        toast({ title: "Invalid coupon", variant: "destructive" });
+        return;
+      }
+      const c = snap.val();
+      if (!c.active) {
+        toast({ title: "Coupon is inactive", variant: "destructive" });
+        return;
+      }
+      if (c.expiresAt && new Date(c.expiresAt) < new Date()) {
+        toast({ title: "Coupon expired", variant: "destructive" });
+        return;
+      }
+      if (c.usageLimit && c.usedCount >= c.usageLimit) {
+        toast({ title: "Coupon usage limit reached", variant: "destructive" });
+        return;
+      }
+      setAppliedCoupon({
+        code: c.code,
+        discountType: c.discountType,
+        discountValue: c.discountValue,
+      });
+      toast({ title: "Coupon applied!", description: `${code} — you saved ₹${
+        c.discountType === "flat"
+          ? Math.min(c.discountValue, APPLICATION_FEE)
+          : Math.round((APPLICATION_FEE * c.discountValue) / 100)
+      }` });
+    } catch (e) {
+      console.error(e);
+      toast({ title: "Could not apply coupon", variant: "destructive" });
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponInput("");
+  };
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -135,12 +197,27 @@ export default function Careers() {
         resumeUrl,
         message: formData.message,
         paymentId,
-        amountPaid: APPLICATION_FEE,
-        paymentStatus: "paid",
+        originalAmount: APPLICATION_FEE,
+        couponCode: appliedCoupon?.code || null,
+        discountApplied: discount,
+        amountPaid: finalAmount,
+        paymentStatus: finalAmount === 0 ? "free" : "paid",
         submittedAt: new Date().toISOString(),
       };
 
       await push(dbRef(database, "careers_applications"), submission);
+
+      /* ---------- 2️⃣b INCREMENT COUPON USAGE ---------- */
+      if (appliedCoupon) {
+        try {
+          await runTransaction(
+            dbRef(database, `coupons/${appliedCoupon.code}/usedCount`),
+            (cur) => (cur || 0) + 1
+          );
+        } catch (e) {
+          console.warn("Coupon counter update failed:", e);
+        }
+      }
 
       /* ---------- 3️⃣ SEND EMAIL ---------- */
       try {
@@ -154,7 +231,9 @@ export default function Careers() {
 
       toast({
         title: "Application Submitted!",
-        description: `Payment successful (₹${APPLICATION_FEE}). Your application has been received.`,
+        description: finalAmount === 0
+          ? `Coupon applied — free registration. Your application has been received.`
+          : `Payment successful (₹${finalAmount}). Your application has been received.`,
       });
 
       setFormData({
@@ -166,6 +245,8 @@ export default function Careers() {
         resume: null,
         message: "",
       });
+      setAppliedCoupon(null);
+      setCouponInput("");
     } catch (error) {
       console.error(error);
       toast({
@@ -206,6 +287,13 @@ export default function Careers() {
       return;
     }
 
+    /* ---------- FREE (100% discount) → skip Razorpay ---------- */
+    if (finalAmount === 0) {
+      setLoading(true);
+      await submitApplication("FREE_COUPON_" + (appliedCoupon?.code || ""));
+      return;
+    }
+
     /* ---------- LOAD RAZORPAY ---------- */
     setLoading(true);
     const ok = await loadRazorpayScript();
@@ -222,7 +310,7 @@ export default function Careers() {
     /* ---------- OPEN CHECKOUT ---------- */
     const options = {
       key: RAZORPAY_KEY_ID,
-      amount: APPLICATION_FEE * 100, // paise
+      amount: finalAmount * 100, // paise
       currency: "INR",
       name: "Nestgen Solutions",
       description: `Application Fee - ${formData.position || "Internship"}`,
@@ -401,6 +489,58 @@ export default function Careers() {
                 }
               />
 
+              {/* COUPON CODE */}
+              <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold">Have a coupon code?</label>
+                  {appliedCoupon && (
+                    <Badge variant="default">
+                      {appliedCoupon.code} applied
+                    </Badge>
+                  )}
+                </div>
+
+                {!appliedCoupon ? (
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Enter coupon code"
+                      value={couponInput}
+                      onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                      className="uppercase"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={applyCoupon}
+                      disabled={couponLoading || !couponInput.trim()}
+                    >
+                      {couponLoading ? "Checking..." : "Apply"}
+                    </Button>
+                  </div>
+                ) : (
+                  <Button type="button" variant="ghost" size="sm" onClick={removeCoupon}>
+                    Remove coupon
+                  </Button>
+                )}
+
+                <div className="text-sm space-y-1 pt-2 border-t border-border">
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>Registration Fee</span>
+                    <span>₹{APPLICATION_FEE}</span>
+                  </div>
+                  {discount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Discount</span>
+                      <span>− ₹{discount}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between font-bold text-base pt-1">
+                    <span>Total Payable</span>
+                    <span>₹{finalAmount}</span>
+                  </div>
+                </div>
+              </div>
+
               {/* TERMS & CONDITIONS */}
               <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-4">
                 <Checkbox
@@ -546,7 +686,11 @@ export default function Careers() {
                 className="w-full"
                 disabled={loading || !acceptedTerms}
               >
-                {loading ? "Processing..." : `Pay ₹${APPLICATION_FEE} & Submit Application`}
+                {loading
+                  ? "Processing..."
+                  : finalAmount === 0
+                    ? "Submit Application (Free)"
+                    : `Pay ₹${finalAmount} & Submit Application`}
               </Button>
 
             </form>
