@@ -287,6 +287,13 @@ export default function Careers() {
       return;
     }
 
+    /* ---------- FREE (100% discount) → skip Razorpay ---------- */
+    if (finalAmount === 0) {
+      setLoading(true);
+      await submitApplication("FREE_COUPON_" + (appliedCoupon?.code || ""));
+      return;
+    }
+
     /* ---------- LOAD RAZORPAY ---------- */
     setLoading(true);
     const ok = await loadRazorpayScript();
@@ -303,7 +310,7 @@ export default function Careers() {
     /* ---------- OPEN CHECKOUT ---------- */
     const options = {
       key: RAZORPAY_KEY_ID,
-      amount: APPLICATION_FEE * 100, // paise
+      amount: finalAmount * 100, // paise
       currency: "INR",
       name: "Nestgen Solutions",
       description: `Application Fee - ${formData.position || "Internship"}`,
