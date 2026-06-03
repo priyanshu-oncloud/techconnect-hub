@@ -27,6 +27,7 @@ import FormSubmissions from "./pages/admin/FormSubmissions";
 import ManageWebsite from "./pages/admin/ManageWebsite";
 import ManageCertificates from "./pages/admin/ManageCertificates";
 import ManageOffers from "./pages/admin/ManageOffers";
+import ManageCoupons from "./pages/admin/ManageCoupons";
 
 const queryClient = new QueryClient();
 
