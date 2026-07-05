@@ -97,11 +97,23 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               </span>
             </div>
 
-            {/* Logout */}
-            <Button onClick={handleLogout} variant="outline" size="sm">
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
+            {/* User info + Logout */}
+            <div className="flex items-center gap-3">
+              {user && (
+                <div className="hidden sm:flex flex-col items-end leading-tight">
+                  <span className="text-xs font-medium truncate max-w-[160px]">{user.email}</span>
+                  {role && (
+                    <span className="text-[10px] uppercase tracking-wide text-primary font-semibold">
+                      {role}
+                    </span>
+                  )}
+                </div>
+              )}
+              <Button onClick={handleLogout} variant="outline" size="sm">
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
+            </div>
           </div>
         </div>
       </header>
