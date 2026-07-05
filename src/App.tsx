@@ -32,7 +32,14 @@ import ManageCoupons from "./pages/admin/ManageCoupons";
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated } = useAdmin();
+  const { isAuthenticated, loading } = useAdmin();
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-muted-foreground">
+        Loading...
+      </div>
+    );
+  }
   return isAuthenticated ? <>{children}</> : <Navigate to="/admin/login" />;
 };
 
