@@ -32,17 +32,19 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     navigate("/admin/login");
   };
 
-  const navItems = [
-    { name: "Dashboard", path: "/admin", icon: Home },
-    { name: "Add Certificate", path: "/admin/ManageCertificates", icon: Briefcase },
-    { name: "Offer Letter", path: "/admin/ManageOffers", icon: Briefcase },
-    { name: "Coupons", path: "/admin/ManageCoupons", icon: Star },
-    { name: "Services", path: "/admin/services", icon: Briefcase },
-    { name: "Projects", path: "/admin/projects", icon: FolderKanban },
-    { name: "Team", path: "/admin/team", icon: Users },
-    { name: "Testimonials", path: "/admin/testimonials", icon: Star },
-    { name: "Form Submissions", path: "/admin/submissions", icon: MessageSquare },
+  const allNavItems = [
+    { name: "Dashboard", path: "/admin", icon: Home, roles: ["superadmin", "admin", "editor"] },
+    { name: "Add Certificate", path: "/admin/ManageCertificates", icon: Briefcase, roles: ["superadmin"] },
+    { name: "Offer Letter", path: "/admin/ManageOffers", icon: Briefcase, roles: ["superadmin"] },
+    { name: "Coupons", path: "/admin/ManageCoupons", icon: Star, roles: ["superadmin"] },
+    { name: "Services", path: "/admin/services", icon: Briefcase, roles: ["superadmin"] },
+    { name: "Projects", path: "/admin/projects", icon: FolderKanban, roles: ["superadmin"] },
+    { name: "Team", path: "/admin/team", icon: Users, roles: ["superadmin"] },
+    { name: "Testimonials", path: "/admin/testimonials", icon: Star, roles: ["superadmin"] },
+    { name: "Form Submissions", path: "/admin/submissions", icon: MessageSquare, roles: ["superadmin"] },
   ];
+
+  const navItems = allNavItems.filter((item) => role && item.roles.includes(role));
 
   const SidebarContent = () => (
     <nav className="p-4 space-y-2">
