@@ -35,14 +35,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const navItems = [
     { name: "Dashboard", path: "/admin", icon: Home },
     { name: "Add Certificate", path: "/admin/ManageCertificates", icon: Briefcase },
-    { name: "Add Offer Letter", path: "/admin/ManageOffers", icon: Briefcase },
+    { name: "Offer Letter", path: "/admin/ManageOffers", icon: Briefcase },
     { name: "Coupons", path: "/admin/ManageCoupons", icon: Star },
     { name: "Services", path: "/admin/services", icon: Briefcase },
     { name: "Projects", path: "/admin/projects", icon: FolderKanban },
     { name: "Team", path: "/admin/team", icon: Users },
     { name: "Testimonials", path: "/admin/testimonials", icon: Star },
     { name: "Form Submissions", path: "/admin/submissions", icon: MessageSquare },
-    { name: "Website Settings", path: "/admin/website", icon: Settings },
   ];
 
   const SidebarContent = () => (
