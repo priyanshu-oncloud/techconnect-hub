@@ -75,7 +75,9 @@ const App = () => (
             <Route path="/admin/ManageCertificates" element={<ProtectedRoute><ManageCertificates /></ProtectedRoute>} />
             <Route path="/admin/ManageOffers" element={<ProtectedRoute><ManageOffers /></ProtectedRoute>} />
             <Route path="/admin/ManageCoupons" element={<ProtectedRoute><ManageCoupons /></ProtectedRoute>} />
+            <Route path="/admin/ManageAdmins" element={<ProtectedRoute><ManageAdmins /></ProtectedRoute>} />
             
+
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

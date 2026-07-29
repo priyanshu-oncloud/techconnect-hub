@@ -11,6 +11,7 @@ import {
   MessageSquare,
   Settings,
   Menu,
+  ShieldCheck,
   X,
 } from "lucide-react";
 import { useAdmin } from "@/contexts/AdminContext";
@@ -43,7 +44,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { name: "Testimonials", path: "/admin/testimonials", icon: Star },
     { name: "Form Submissions", path: "/admin/submissions", icon: MessageSquare },
     { name: "Website Settings", path: "/admin/website", icon: Settings },
+    ...(role === "superadmin"
+      ? [{ name: "Manage Admins", path: "/admin/ManageAdmins", icon: ShieldCheck }]
+      : []),
   ];
+
 
   const SidebarContent = () => (
     <nav className="p-4 space-y-2">

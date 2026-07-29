@@ -32,12 +32,12 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (u) {
         try {
           const snap = await get(ref(database, `admins/${u.uid}`));
-          if (snap.exists()) {
+          if (snap.exists() && !snap.val()?.disabled) {
             const data = snap.val();
             setUser(u);
             setRole((data.role as AdminRole) || "admin");
           } else {
-            // Not an authorized admin — sign out silently
+            // Not an authorized admin (or disabled) — sign out silently
             await signOut(auth);
             setUser(null);
             setRole(null);
@@ -64,6 +64,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         await signOut(auth);
         return { ok: false, error: "Access denied. You are not an admin." };
       }
+      if (snap.val()?.disabled) {
+        await signOut(auth);
+        return { ok: false, error: "Your admin account has been disabled." };
+      }
+
       const data = snap.val();
       setUser(cred.user);
       setRole((data.role as AdminRole) || "admin");
