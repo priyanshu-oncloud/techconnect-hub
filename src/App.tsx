@@ -12,6 +12,7 @@ import Services from "./pages/Services";
 import Projects from "./pages/Projects";
 import Technologies from "./pages/Technologies";
 import Careers from "./pages/Careers";
+import StudentAmbassador from "./pages/StudentAmbassador";
 import Contact from "./pages/Contact";
 import CertificateVerification from "./pages/CertificateVerification";
 import CertificateInputPage from "./pages/CertificateInputPage";
