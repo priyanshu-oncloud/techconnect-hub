@@ -31,18 +31,30 @@ import ManageOffers from "./pages/admin/ManageOffers";
 import ManageCoupons from "./pages/admin/ManageCoupons";
 import ManageAdmins from "./pages/admin/ManageAdmins";
 
+import { AmbassadorProvider, useAmbassador } from "@/contexts/AmbassadorContext";
+import AmbassadorLogin from "./pages/ambassador/Login";
+import AmbassadorDashboard from "./pages/ambassador/Dashboard";
+import AmbassadorReferrals from "./pages/ambassador/Referrals";
+import AmbassadorLeaderboard from "./pages/ambassador/Leaderboard";
+
 const queryClient = new QueryClient();
+
+const Loading = () => (
+  <div className="min-h-screen flex items-center justify-center text-muted-foreground">
+    Loading...
+  </div>
+);
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, loading } = useAdmin();
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-muted-foreground">
-        Loading...
-      </div>
-    );
-  }
+  if (loading) return <Loading />;
   return isAuthenticated ? <>{children}</> : <Navigate to="/admin/login" />;
+};
+
+const AmbassadorRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAmbassador();
+  if (loading) return <Loading />;
+  return user ? <>{children}</> : <Navigate to="/ambassador/login" />;
 };
 
 const App = () => (
