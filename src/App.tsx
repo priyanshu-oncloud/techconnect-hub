@@ -61,6 +61,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AdminProvider>
+        <AmbassadorProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
@@ -90,12 +91,18 @@ const App = () => (
             <Route path="/admin/ManageOffers" element={<ProtectedRoute><ManageOffers /></ProtectedRoute>} />
             <Route path="/admin/ManageCoupons" element={<ProtectedRoute><ManageCoupons /></ProtectedRoute>} />
             <Route path="/admin/ManageAdmins" element={<ProtectedRoute><ManageAdmins /></ProtectedRoute>} />
-            
+
+            {/* Ambassador Portal (isolated) */}
+            <Route path="/ambassador/login" element={<AmbassadorLogin />} />
+            <Route path="/ambassador" element={<AmbassadorRoute><AmbassadorDashboard /></AmbassadorRoute>} />
+            <Route path="/ambassador/referrals" element={<AmbassadorRoute><AmbassadorReferrals /></AmbassadorRoute>} />
+            <Route path="/ambassador/leaderboard" element={<AmbassadorRoute><AmbassadorLeaderboard /></AmbassadorRoute>} />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
+        </AmbassadorProvider>
       </AdminProvider>
     </TooltipProvider>
   </QueryClientProvider>
