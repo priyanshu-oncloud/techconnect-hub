@@ -13,9 +13,7 @@ const navItems = [
   { name: "Projects", path: "/projects" },
   { name: "Technologies", path: "/technologies" },
   { name: "Careers", path: "/careers" },
-  { name: "Ambassador", path: "/student-ambassador" },
   { name: "Contact", path: "/contact" },
-  { name: "Admin", path: "/admin" },
 ];
 
 export const Navigation = () => {
