@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ServiceCard } from "@/components/ServiceCard";
 import { TestimonialCard } from "@/components/TestimonialCard";
 import { Link } from "react-router-dom";
-import { ArrowRight, Code2 } from "lucide-react";
+import { ArrowRight, Code2, Users } from "lucide-react";
 import * as Icons from "lucide-react";
 
 interface Testimonial {
@@ -141,6 +141,17 @@ export default function Home() {
                   asChild
                 >
                   <Link to="/services">Explore Services</Link>
+                </Button>
+
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  className="hover:scale-105 transition"
+                  asChild
+                >
+                  <Link to="/student-ambassador">
+                    <Users className="mr-2 w-5 h-5" /> Become Ambassador
+                  </Link>
                 </Button>
               </div>
 
