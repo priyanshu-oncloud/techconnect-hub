@@ -142,6 +142,17 @@ export default function Home() {
                 >
                   <Link to="/services">Explore Services</Link>
                 </Button>
+
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  className="hover:scale-105 transition"
+                  asChild
+                >
+                  <Link to="/student-ambassador">
+                    <Users className="mr-2 w-5 h-5" /> Become Ambassador
+                  </Link>
+                </Button>
               </div>
 
               {/* Stats */}
