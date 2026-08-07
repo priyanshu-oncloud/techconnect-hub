@@ -79,6 +79,7 @@ export const Footer = () => {
               <li><Link to="/services" className="footer-link">Services</Link></li>
               <li><Link to="/projects" className="footer-link">Projects</Link></li>
               <li><Link to="/careers" className="footer-link">Careers</Link></li>
+              <li><Link to="/admin/login" className="footer-link">Admin</Link></li>
             </ul>
           </div>
 
