@@ -11,7 +11,6 @@ import { database } from "@/firebase";
 interface WebsiteSettings {
   websiteName: string;
   email: string;
-  adminEmail: string;
   phone: string;
   address: string;
   facebook?: string;
@@ -24,7 +23,6 @@ const ManageWebsite = () => {
   const [settings, setSettings] = useState<WebsiteSettings>({
     websiteName: "",
     email: "",
-    adminEmail: "",
     phone: "",
     address: "",
     facebook: "",
@@ -88,17 +86,6 @@ const ManageWebsite = () => {
                   type="email"
                   value={settings.email}
                   onChange={(e) => handleChange("email", e.target.value)}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium">Admin Email</label>
-                <Input
-                  type="email"
-                  value={settings.adminEmail}
-                  onChange={(e) => handleChange("adminEmail", e.target.value)}
-                  placeholder="admin@example.com"
                   required
                 />
               </div>

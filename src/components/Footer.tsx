@@ -17,7 +17,6 @@ import { database } from "@/firebase";
 interface SettingsData {
   address: string;
   email: string;
-  adminEmail: string;
   phone: string;
   linkedin: string;
   twitter: string;
@@ -30,7 +29,6 @@ export const Footer = () => {
   const [settings, setSettings] = useState<SettingsData>({
     address: "",
     email: "",
-    adminEmail: "",
     phone: "",
     linkedin: "",
     twitter: "",
@@ -111,15 +109,6 @@ export const Footer = () => {
                   <Mail className="w-4 h-4 text-primary" />
                   <a href={`mailto:${settings.email}`} className="hover:text-primary">
                     {settings.email}
-                  </a>
-                </li>
-              )}
-
-              {settings.adminEmail && (
-                <li className="flex items-center space-x-2 text-sm text-muted-foreground">
-                  <Mail className="w-4 h-4 text-primary" />
-                  <a href={`mailto:${settings.adminEmail}`} className="hover:text-primary">
-                    {settings.adminEmail}
                   </a>
                 </li>
               )}
