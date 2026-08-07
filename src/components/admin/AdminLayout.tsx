@@ -12,6 +12,7 @@ import {
   Settings,
   Menu,
   ShieldCheck,
+  GraduationCap,
   X,
 } from "lucide-react";
 import { useAdmin } from "@/contexts/AdminContext";
@@ -42,6 +43,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { name: "Projects", path: "/admin/projects", icon: FolderKanban },
     { name: "Team", path: "/admin/team", icon: Users },
     { name: "Testimonials", path: "/admin/testimonials", icon: Star },
+    { name: "Ambassadors", path: "/admin/ManageAmbassadors", icon: GraduationCap },
     { name: "Form Submissions", path: "/admin/submissions", icon: MessageSquare },
     { name: "Website Settings", path: "/admin/website", icon: Settings },
     ...(role === "superadmin"
