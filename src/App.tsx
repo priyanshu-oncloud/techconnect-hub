@@ -30,6 +30,7 @@ import ManageCertificates from "./pages/admin/ManageCertificates";
 import ManageOffers from "./pages/admin/ManageOffers";
 import ManageCoupons from "./pages/admin/ManageCoupons";
 import ManageAdmins from "./pages/admin/ManageAdmins";
+import ManageAmbassadors from "./pages/admin/ManageAmbassadors";
 
 import { AmbassadorProvider, useAmbassador } from "@/contexts/AmbassadorContext";
 import AmbassadorLogin from "./pages/ambassador/Login";
@@ -90,6 +91,7 @@ const App = () => (
             <Route path="/admin/ManageCertificates" element={<ProtectedRoute><ManageCertificates /></ProtectedRoute>} />
             <Route path="/admin/ManageOffers" element={<ProtectedRoute><ManageOffers /></ProtectedRoute>} />
             <Route path="/admin/ManageCoupons" element={<ProtectedRoute><ManageCoupons /></ProtectedRoute>} />
+            <Route path="/admin/ManageAmbassadors" element={<ProtectedRoute><ManageAmbassadors /></ProtectedRoute>} />
             <Route path="/admin/ManageAdmins" element={<ProtectedRoute><ManageAdmins /></ProtectedRoute>} />
 
             {/* Ambassador Portal (isolated) */}
