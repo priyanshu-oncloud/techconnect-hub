@@ -288,8 +288,46 @@ export default function ManageCertificates() {
           </Card>
         )}
 
-        {/* TABLE */}
-        <div className="w-full overflow-x-auto rounded-lg border border-border">
+        {/* MOBILE CARDS */}
+        <div className="grid grid-cols-1 gap-4 md:hidden">
+          {currentRows.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-8">
+              No certificates yet.
+            </p>
+          )}
+          {currentRows.map((c) => (
+            <Card key={c.certificateNo}>
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="font-semibold break-all">{c.certificateNo}</p>
+                    <p className="text-sm text-muted-foreground">{c.name}</p>
+                  </div>
+                  <Badge>{c.role}</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Duration: {c.duration}
+                </p>
+                <div className="flex gap-2">
+                  <Button size="sm" className="flex-1" onClick={() => handleDownload(c)}>
+                    Download
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    className="flex-1"
+                    onClick={() => handleDelete(c.certificateNo)}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* TABLE (desktop) */}
+        <div className="hidden md:block w-full overflow-x-auto rounded-lg border border-border">
         <Table className="min-w-[720px]">
           <TableHeader>
             <TableRow>
@@ -329,6 +367,7 @@ export default function ManageCertificates() {
           </TableBody>
         </Table>
         </div>
+
 
       </div>
     </AdminLayout>
