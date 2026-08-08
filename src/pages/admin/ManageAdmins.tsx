@@ -183,10 +183,67 @@ export default function ManageAdmins() {
           <CardHeader>
             <CardTitle className="text-lg">All Admins ({entries.length})</CardTitle>
           </CardHeader>
-          <CardContent className="overflow-x-auto">
+          <CardContent>
             {entries.length === 0 ? (
               <p className="text-sm text-muted-foreground">No admins yet.</p>
             ) : (
+              <>
+                {/* MOBILE CARDS */}
+                <div className="grid grid-cols-1 gap-4 md:hidden">
+                  {entries.map(([uid, entry]) => (
+                    <div key={uid} className="rounded-lg border border-border p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="font-medium break-all text-sm">
+                          {entry.email}
+                          {uid === user?.uid && (
+                            <span className="ml-2 text-xs text-muted-foreground">(you)</span>
+                          )}
+                        </p>
+                        <Badge variant={entry.disabled ? "destructive" : "default"}>
+                          {entry.disabled ? "Disabled" : "Active"}
+                        </Badge>
+                      </div>
+                      <Select
+                        value={entry.role}
+                        onValueChange={(v) => changeRole(uid, v as AdminRole)}
+                        disabled={uid === user?.uid}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="superadmin">Superadmin</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="editor">Editor</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1"
+                          onClick={() => toggleActive(uid, entry)}
+                          disabled={uid === user?.uid}
+                        >
+                          <Power className="w-4 h-4 mr-1" />
+                          {entry.disabled ? "Enable" : "Disable"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="flex-1"
+                          onClick={() => handleDelete(uid, entry)}
+                          disabled={uid === user?.uid}
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" /> Delete
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* TABLE (desktop) */}
+                <div className="hidden md:block overflow-x-auto">
               <Table className="min-w-[640px]">
                 <TableHeader>
                   <TableRow>
@@ -249,7 +306,10 @@ export default function ManageAdmins() {
                   ))}
                 </TableBody>
               </Table>
+                </div>
+              </>
             )}
+
           </CardContent>
         </Card>
       </div>

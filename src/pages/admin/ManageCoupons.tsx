@@ -183,10 +183,55 @@ export default function ManageCoupons() {
           <CardHeader>
             <CardTitle>All Coupons ({list.length})</CardTitle>
           </CardHeader>
-          <CardContent className="overflow-x-auto">
+          <CardContent>
             {list.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">No coupons yet.</p>
             ) : (
+              <>
+                {/* MOBILE CARDS */}
+                <div className="grid grid-cols-1 gap-4 md:hidden">
+                  {list.map((c) => (
+                    <div key={c.code} className="rounded-lg border border-border p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="font-mono font-semibold break-all">{c.code}</p>
+                        <Badge variant={c.active ? "default" : "secondary"}>
+                          {c.active ? "Active" : "Inactive"}
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div>
+                          <p className="text-muted-foreground">Discount</p>
+                          <p className="font-medium">
+                            {c.discountType === "flat" ? `₹${c.discountValue}` : `${c.discountValue}%`}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Usage</p>
+                          <p className="font-medium">
+                            {c.usedCount}/{c.usageLimit === 0 ? "∞" : c.usageLimit}
+                          </p>
+                        </div>
+                        <div className="col-span-2">
+                          <p className="text-muted-foreground">Expires</p>
+                          <p className="font-medium">
+                            {c.expiresAt ? new Date(c.expiresAt).toLocaleDateString() : "—"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline" className="flex-1" onClick={() => handleToggle(c.code, c.active)}>
+                          <Power className="w-3 h-3 mr-1" /> {c.active ? "Disable" : "Enable"}
+                        </Button>
+                        <Button size="sm" variant="destructive" className="flex-1" onClick={() => handleDelete(c.code)}>
+                          <Trash2 className="w-3 h-3 mr-1" /> Delete
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* TABLE (desktop) */}
+                <div className="hidden md:block overflow-x-auto">
               <Table className="min-w-[720px]">
                 <TableHeader>
                   <TableRow>
@@ -230,7 +275,10 @@ export default function ManageCoupons() {
                   ))}
                 </TableBody>
               </Table>
+                </div>
+              </>
             )}
+
           </CardContent>
         </Card>
       </div>
