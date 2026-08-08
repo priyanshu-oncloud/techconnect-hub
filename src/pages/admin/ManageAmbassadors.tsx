@@ -324,6 +324,7 @@ export default function ManageAmbassadors() {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
