@@ -341,7 +341,72 @@ export default function ManageAmbassadors() {
                   <Download className="mr-2 h-4 w-4" /> Export CSV
                 </Button>
               </CardHeader>
-              <CardContent className="overflow-x-auto">
+              <CardContent>
+                {/* MOBILE CARDS */}
+                <div className="grid grid-cols-1 gap-4 md:hidden">
+                  {ambList.length === 0 && (
+                    <p className="py-8 text-center text-muted-foreground">No ambassadors yet.</p>
+                  )}
+                  {ambList.map(([uid, a]) => (
+                    <div key={uid} className="rounded-lg border border-border p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="font-medium">{a.fullName || "—"}</p>
+                          <p className="text-xs text-muted-foreground break-all">{a.email}</p>
+                          <p className="font-mono text-xs">{a.referralCode || "—"}</p>
+                        </div>
+                        <Badge variant="outline">{tierOf(a.successfulRegistrations || 0)}</Badge>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Referrals</p>
+                          <Input
+                            type="number"
+                            className="h-9"
+                            defaultValue={a.referrals || 0}
+                            onBlur={(e) => {
+                              const v = Number(e.target.value) || 0;
+                              if (v !== (a.referrals || 0)) setAmbField(uid, { referrals: v });
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Registrations</p>
+                          <Input
+                            type="number"
+                            className="h-9"
+                            defaultValue={a.successfulRegistrations || 0}
+                            onBlur={(e) => {
+                              const v = Number(e.target.value) || 0;
+                              if (v !== (a.successfulRegistrations || 0))
+                                setAmbField(uid, { successfulRegistrations: v });
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Select
+                          value={a.status || "active"}
+                          onValueChange={(v) => setAmbField(uid, { status: v })}
+                        >
+                          <SelectTrigger className="h-9 flex-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="suspended">Suspended</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button size="icon" variant="destructive" onClick={() => deleteAmb(uid)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* TABLE (desktop) */}
+                <div className="hidden md:block overflow-x-auto">
                 <Table className="min-w-[900px]">
                   <TableHeader>
                     <TableRow>
