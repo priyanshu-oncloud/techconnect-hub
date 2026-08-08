@@ -147,7 +147,7 @@ export default function ManageAdmins() {
               <UserPlus className="w-5 h-5" /> Add Admin
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-4">
+          <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Input
               placeholder="Email"
               type="email"
@@ -187,7 +187,7 @@ export default function ManageAdmins() {
             {entries.length === 0 ? (
               <p className="text-sm text-muted-foreground">No admins yet.</p>
             ) : (
-              <Table>
+              <Table className="min-w-[640px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Email</TableHead>
