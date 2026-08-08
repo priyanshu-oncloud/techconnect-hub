@@ -211,17 +211,18 @@ export default function ManageCertificates() {
       <div className="space-y-6">
 
         {/* HEADER */}
-        <div className="flex justify-between">
-          <h1 className="text-2xl font-bold">Manage Certificates</h1>
-          <Button onClick={() => setShowForm(true)}>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-xl sm:text-2xl font-bold">Manage Certificates</h1>
+          <Button className="w-full sm:w-auto" onClick={() => setShowForm(true)}>
             <Plus className="w-4 h-4 mr-2" />
             Add Certificate
           </Button>
         </div>
 
+
         {/* FORM */}
         {showForm && (
-          <Card className="max-w-xl">
+          <Card className="w-full max-w-xl">
             <CardHeader>
               <CardTitle>Add Certificates</CardTitle>
             </CardHeader>
@@ -288,7 +289,8 @@ export default function ManageCertificates() {
         )}
 
         {/* TABLE */}
-        <Table>
+        <div className="w-full overflow-x-auto rounded-lg border border-border">
+        <Table className="min-w-[720px]">
           <TableHeader>
             <TableRow>
               <TableHead>Certificate No</TableHead>
@@ -326,6 +328,7 @@ export default function ManageCertificates() {
             ))}
           </TableBody>
         </Table>
+        </div>
 
       </div>
     </AdminLayout>
