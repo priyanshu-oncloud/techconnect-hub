@@ -197,13 +197,14 @@ export default function ManageOffers() {
       <div className="space-y-6">
 
         {/* HEADER */}
-        <div className="flex justify-between">
-          <h1 className="text-2xl font-bold">Manage Offers</h1>
-          <Button onClick={() => setShowForm(true)}>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-xl sm:text-2xl font-bold">Manage Offers</h1>
+          <Button className="w-full sm:w-auto" onClick={() => setShowForm(true)}>
             <Plus className="w-4 h-4 mr-2" />
             Add Offer
           </Button>
         </div>
+
 
         {/* FORM */}
         {showForm && (
@@ -301,7 +302,8 @@ export default function ManageOffers() {
         )}
 
         {/* TABLE */}
-        <Table>
+        <div className="w-full overflow-x-auto rounded-lg border border-border">
+        <Table className="min-w-[720px]">
           <TableHeader>
             <TableRow>
               <TableHead>Offer No</TableHead>
@@ -337,6 +339,7 @@ export default function ManageOffers() {
             ))}
           </TableBody>
         </Table>
+        </div>
 
       </div>
     </AdminLayout>

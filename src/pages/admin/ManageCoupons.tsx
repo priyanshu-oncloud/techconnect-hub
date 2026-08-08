@@ -105,9 +105,10 @@ export default function ManageCoupons() {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Manage Coupons</h1>
-          <p className="text-muted-foreground">Create discount codes for the careers registration fee.</p>
+          <h1 className="text-2xl md:text-3xl font-bold">Manage Coupons</h1>
+          <p className="text-sm md:text-base text-muted-foreground">Create discount codes for the careers registration fee.</p>
         </div>
+
 
         <Card>
           <CardHeader>
@@ -115,7 +116,7 @@ export default function ManageCoupons() {
               <Plus className="w-5 h-5" /> Create New Coupon
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <label className="text-sm font-medium">Code</label>
               <Input
@@ -182,11 +183,11 @@ export default function ManageCoupons() {
           <CardHeader>
             <CardTitle>All Coupons ({list.length})</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-x-auto">
             {list.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">No coupons yet.</p>
             ) : (
-              <Table>
+              <Table className="min-w-[720px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Code</TableHead>

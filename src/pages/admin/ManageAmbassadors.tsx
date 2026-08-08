@@ -177,9 +177,10 @@ export default function ManageAmbassadors() {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Student Ambassadors</h1>
-          <p className="text-muted-foreground">Review applications and manage active ambassadors.</p>
+          <h1 className="text-2xl md:text-3xl font-bold">Student Ambassadors</h1>
+          <p className="text-sm md:text-base text-muted-foreground">Review applications and manage active ambassadors.</p>
         </div>
+
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {statCards.map((s) => (
@@ -219,14 +220,15 @@ export default function ManageAmbassadors() {
         </div>
 
         <Tabs defaultValue="applications">
-          <TabsList>
-            <TabsTrigger value="applications">Applications ({appList.length})</TabsTrigger>
-            <TabsTrigger value="ambassadors">Ambassadors ({ambList.length})</TabsTrigger>
+          <TabsList className="w-full sm:w-auto">
+            <TabsTrigger className="flex-1 sm:flex-none text-xs sm:text-sm" value="applications">Applications ({appList.length})</TabsTrigger>
+            <TabsTrigger className="flex-1 sm:flex-none text-xs sm:text-sm" value="ambassadors">Ambassadors ({ambList.length})</TabsTrigger>
           </TabsList>
+
 
           <TabsContent value="applications" className="mt-4">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
+              <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <CardTitle>Applications</CardTitle>
                 <Button
                   variant="outline"
@@ -237,7 +239,7 @@ export default function ManageAmbassadors() {
                 </Button>
               </CardHeader>
               <CardContent className="overflow-x-auto">
-                <Table>
+                <Table className="min-w-[720px]">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Name</TableHead>
@@ -292,7 +294,7 @@ export default function ManageAmbassadors() {
 
           <TabsContent value="ambassadors" className="mt-4">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
+              <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <CardTitle>Active Ambassadors</CardTitle>
                 <Button
                   variant="outline"
@@ -303,7 +305,7 @@ export default function ManageAmbassadors() {
                 </Button>
               </CardHeader>
               <CardContent className="overflow-x-auto">
-                <Table>
+                <Table className="min-w-[900px]">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Name</TableHead>
