@@ -553,23 +553,29 @@ export default function Careers() {
 
               {/* COUPON CODE */}
               <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-semibold">Have a coupon code?</label>
+                <div className="flex items-center justify-between gap-2">
+                  <label className="text-sm font-semibold">
+                    Have a coupon or referral code?
+                  </label>
                   {appliedCoupon && (
+                    <Badge variant="default">{appliedCoupon.code} applied</Badge>
+                  )}
+                  {appliedReferral && (
                     <Badge variant="default">
-                      {appliedCoupon.code} applied
+                      {appliedReferral.code} — {appliedReferral.name}
                     </Badge>
                   )}
                 </div>
 
-                {!appliedCoupon ? (
+                {!appliedCoupon && !appliedReferral ? (
                   <div className="flex gap-2">
                     <Input
-                      placeholder="Enter coupon code"
+                      placeholder="Enter coupon / referral code"
                       value={couponInput}
                       onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
                       className="uppercase"
                     />
+
                     <Button
                       type="button"
                       variant="outline"
