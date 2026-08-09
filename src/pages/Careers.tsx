@@ -241,6 +241,8 @@ export default function Careers() {
         paymentId,
         originalAmount: APPLICATION_FEE,
         couponCode: appliedCoupon?.code || null,
+        referralCode: appliedReferral?.code || null,
+        referredByUid: appliedReferral?.uid || null,
         discountApplied: discount,
         amountPaid: finalAmount,
         paymentStatus: finalAmount === 0 ? "free" : "paid",
@@ -258,6 +260,22 @@ export default function Careers() {
           );
         } catch (e) {
           console.warn("Coupon counter update failed:", e);
+        }
+      }
+
+      /* ---------- 2️⃣c CREDIT AMBASSADOR (only on successful payment) ---------- */
+      if (appliedReferral && submission.paymentStatus === "paid") {
+        try {
+          await runTransaction(
+            dbRef(database, `ambassadors/${appliedReferral.uid}/successfulRegistrations`),
+            (cur) => (cur || 0) + 1
+          );
+          await runTransaction(
+            dbRef(database, `ambassadors/${appliedReferral.uid}/referrals`),
+            (cur) => (cur || 0) + 1
+          );
+        } catch (e) {
+          console.warn("Referral credit failed:", e);
         }
       }
 
@@ -288,7 +306,9 @@ export default function Careers() {
         message: "",
       });
       setAppliedCoupon(null);
+      setAppliedReferral(null);
       setCouponInput("");
+
     } catch (error) {
       console.error(error);
       toast({
