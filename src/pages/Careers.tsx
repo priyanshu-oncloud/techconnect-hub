@@ -587,7 +587,7 @@ export default function Careers() {
                   </div>
                 ) : (
                   <Button type="button" variant="ghost" size="sm" onClick={removeCoupon}>
-                    Remove coupon
+                    Remove code
                   </Button>
                 )}
 
