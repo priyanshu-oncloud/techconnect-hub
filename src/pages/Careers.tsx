@@ -42,6 +42,8 @@ import {
 // TODO: Replace with your actual Razorpay Key ID (publishable, safe in frontend)
 const RAZORPAY_KEY_ID = "rzp_test_XXXXXXXXXXXXXX";
 const APPLICATION_FEE = 99; // ₹99
+const REFERRAL_DISCOUNT = 30; // ₹30 off when an ambassador referral code is used
+
 
 declare global {
   interface Window {
