@@ -86,9 +86,17 @@
     @apply bg-background text-foreground antialiased;
   }
 
-  /* Prevent descenders (g, y, p) from being cut off in gradient text */
-  .bg-clip-text {
-    line-height: 1.2;
-    padding-bottom: 0.12em;
+}
+
+@layer utilities {
+  /* Keep gradient heading glyphs fully inside their painted area. */
+  h1.bg-clip-text {
+    display: inline-block;
+    max-width: 100%;
+    line-height: 1.18 !important;
+    padding: 0.08em 0.03em 0.2em;
+    overflow: visible;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
   }
 }
