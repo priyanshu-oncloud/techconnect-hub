@@ -42,6 +42,8 @@ import {
 // TODO: Replace with your actual Razorpay Key ID (publishable, safe in frontend)
 const RAZORPAY_KEY_ID = "rzp_test_XXXXXXXXXXXXXX";
 const APPLICATION_FEE = 99; // ₹99
+const REFERRAL_DISCOUNT = 30; // ₹30 off when an ambassador referral code is used
+
 
 declare global {
   interface Window {
@@ -110,11 +112,19 @@ export default function Careers() {
     discountType: "flat" | "percent";
     discountValue: number;
   }>(null);
+  /* referral (ambassador) code applied in the same field */
+  const [appliedReferral, setAppliedReferral] = useState<null | {
+    code: string;
+    uid: string;
+    name: string;
+  }>(null);
 
   const discount = appliedCoupon
     ? appliedCoupon.discountType === "flat"
       ? Math.min(appliedCoupon.discountValue, APPLICATION_FEE)
       : Math.round((APPLICATION_FEE * appliedCoupon.discountValue) / 100)
+    : appliedReferral
+    ? Math.min(REFERRAL_DISCOUNT, APPLICATION_FEE)
     : 0;
   const finalAmount = Math.max(0, APPLICATION_FEE - discount);
 
@@ -124,36 +134,66 @@ export default function Careers() {
     setCouponLoading(true);
     try {
       const snap = await get(dbRef(database, `coupons/${code}`));
-      if (!snap.exists()) {
-        toast({ title: "Invalid coupon", variant: "destructive" });
+      if (snap.exists()) {
+        const c = snap.val();
+        if (!c.active) {
+          toast({ title: "Coupon is inactive", variant: "destructive" });
+          return;
+        }
+        if (c.expiresAt && new Date(c.expiresAt) < new Date()) {
+          toast({ title: "Coupon expired", variant: "destructive" });
+          return;
+        }
+        if (c.usageLimit && c.usedCount >= c.usageLimit) {
+          toast({ title: "Coupon usage limit reached", variant: "destructive" });
+          return;
+        }
+        setAppliedReferral(null);
+        setAppliedCoupon({
+          code: c.code,
+          discountType: c.discountType,
+          discountValue: c.discountValue,
+        });
+        toast({
+          title: "Coupon applied!",
+          description: `${code} — you saved ₹${
+            c.discountType === "flat"
+              ? Math.min(c.discountValue, APPLICATION_FEE)
+              : Math.round((APPLICATION_FEE * c.discountValue) / 100)
+          }`,
+        });
         return;
       }
-      const c = snap.val();
-      if (!c.active) {
-        toast({ title: "Coupon is inactive", variant: "destructive" });
+
+      /* ---- Not a coupon? Try ambassador referral code ---- */
+      const ambSnap = await get(dbRef(database, "ambassadors"));
+      const ambs = ambSnap.exists() ? ambSnap.val() : {};
+      const match = Object.entries<any>(ambs).find(
+        ([, a]) => (a.referralCode || "").toUpperCase() === code
+      );
+
+      if (!match) {
+        toast({ title: "Invalid code", variant: "destructive" });
         return;
       }
-      if (c.expiresAt && new Date(c.expiresAt) < new Date()) {
-        toast({ title: "Coupon expired", variant: "destructive" });
+      const [uid, amb] = match;
+      if (amb.status && amb.status !== "active") {
+        toast({ title: "This referral code is not active", variant: "destructive" });
         return;
       }
-      if (c.usageLimit && c.usedCount >= c.usageLimit) {
-        toast({ title: "Coupon usage limit reached", variant: "destructive" });
-        return;
-      }
-      setAppliedCoupon({
-        code: c.code,
-        discountType: c.discountType,
-        discountValue: c.discountValue,
+
+      setAppliedCoupon(null);
+      setAppliedReferral({ code, uid, name: amb.fullName || "Ambassador" });
+      toast({
+        title: "Referral code applied!",
+        description: `Referred by ${amb.fullName || "an ambassador"} — you saved ₹${Math.min(
+          REFERRAL_DISCOUNT,
+          APPLICATION_FEE
+        )}`,
       });
-      toast({ title: "Coupon applied!", description: `${code} — you saved ₹${
-        c.discountType === "flat"
-          ? Math.min(c.discountValue, APPLICATION_FEE)
-          : Math.round((APPLICATION_FEE * c.discountValue) / 100)
-      }` });
     } catch (e) {
       console.error(e);
-      toast({ title: "Could not apply coupon", variant: "destructive" });
+      toast({ title: "Could not apply code", variant: "destructive" });
     } finally {
       setCouponLoading(false);
     }
@@ -161,8 +201,10 @@ export default function Careers() {
 
   const removeCoupon = () => {
     setAppliedCoupon(null);
+    setAppliedReferral(null);
     setCouponInput("");
   };
+
 
   const [formData, setFormData] = useState({
     name: "",
@@ -199,6 +241,8 @@ export default function Careers() {
         paymentId,
         originalAmount: APPLICATION_FEE,
         couponCode: appliedCoupon?.code || null,
+        referralCode: appliedReferral?.code || null,
+        referredByUid: appliedReferral?.uid || null,
         discountApplied: discount,
         amountPaid: finalAmount,
         paymentStatus: finalAmount === 0 ? "free" : "paid",
@@ -216,6 +260,22 @@ export default function Careers() {
           );
         } catch (e) {
           console.warn("Coupon counter update failed:", e);
+        }
+      }
+
+      /* ---------- 2️⃣c CREDIT AMBASSADOR (only on successful payment) ---------- */
+      if (appliedReferral && submission.paymentStatus === "paid") {
+        try {
+          await runTransaction(
+            dbRef(database, `ambassadors/${appliedReferral.uid}/successfulRegistrations`),
+            (cur) => (cur || 0) + 1
+          );
+          await runTransaction(
+            dbRef(database, `ambassadors/${appliedReferral.uid}/referrals`),
+            (cur) => (cur || 0) + 1
+          );
+        } catch (e) {
+          console.warn("Referral credit failed:", e);
         }
       }
 
@@ -246,7 +306,9 @@ export default function Careers() {
         message: "",
       });
       setAppliedCoupon(null);
+      setAppliedReferral(null);
       setCouponInput("");
+
     } catch (error) {
       console.error(error);
       toast({
@@ -491,23 +553,29 @@ export default function Careers() {
 
               {/* COUPON CODE */}
               <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-semibold">Have a coupon code?</label>
+                <div className="flex items-center justify-between gap-2">
+                  <label className="text-sm font-semibold">
+                    Have a coupon or referral code?
+                  </label>
                   {appliedCoupon && (
+                    <Badge variant="default">{appliedCoupon.code} applied</Badge>
+                  )}
+                  {appliedReferral && (
                     <Badge variant="default">
-                      {appliedCoupon.code} applied
+                      {appliedReferral.code} — {appliedReferral.name}
                     </Badge>
                   )}
                 </div>
 
-                {!appliedCoupon ? (
+                {!appliedCoupon && !appliedReferral ? (
                   <div className="flex gap-2">
                     <Input
-                      placeholder="Enter coupon code"
+                      placeholder="Enter coupon / referral code"
                       value={couponInput}
                       onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
                       className="uppercase"
                     />
+
                     <Button
                       type="button"
                       variant="outline"
@@ -519,7 +587,7 @@ export default function Careers() {
                   </div>
                 ) : (
                   <Button type="button" variant="ghost" size="sm" onClick={removeCoupon}>
-                    Remove coupon
+                    Remove code
                   </Button>
                 )}
 
