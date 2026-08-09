@@ -112,11 +112,19 @@ export default function Careers() {
     discountType: "flat" | "percent";
     discountValue: number;
   }>(null);
+  /* referral (ambassador) code applied in the same field */
+  const [appliedReferral, setAppliedReferral] = useState<null | {
+    code: string;
+    uid: string;
+    name: string;
+  }>(null);
 
   const discount = appliedCoupon
     ? appliedCoupon.discountType === "flat"
       ? Math.min(appliedCoupon.discountValue, APPLICATION_FEE)
       : Math.round((APPLICATION_FEE * appliedCoupon.discountValue) / 100)
+    : appliedReferral
+    ? Math.min(REFERRAL_DISCOUNT, APPLICATION_FEE)
     : 0;
   const finalAmount = Math.max(0, APPLICATION_FEE - discount);
 
@@ -126,36 +134,66 @@ export default function Careers() {
     setCouponLoading(true);
     try {
       const snap = await get(dbRef(database, `coupons/${code}`));
-      if (!snap.exists()) {
-        toast({ title: "Invalid coupon", variant: "destructive" });
+      if (snap.exists()) {
+        const c = snap.val();
+        if (!c.active) {
+          toast({ title: "Coupon is inactive", variant: "destructive" });
+          return;
+        }
+        if (c.expiresAt && new Date(c.expiresAt) < new Date()) {
+          toast({ title: "Coupon expired", variant: "destructive" });
+          return;
+        }
+        if (c.usageLimit && c.usedCount >= c.usageLimit) {
+          toast({ title: "Coupon usage limit reached", variant: "destructive" });
+          return;
+        }
+        setAppliedReferral(null);
+        setAppliedCoupon({
+          code: c.code,
+          discountType: c.discountType,
+          discountValue: c.discountValue,
+        });
+        toast({
+          title: "Coupon applied!",
+          description: `${code} — you saved ₹${
+            c.discountType === "flat"
+              ? Math.min(c.discountValue, APPLICATION_FEE)
+              : Math.round((APPLICATION_FEE * c.discountValue) / 100)
+          }`,
+        });
         return;
       }
-      const c = snap.val();
-      if (!c.active) {
-        toast({ title: "Coupon is inactive", variant: "destructive" });
+
+      /* ---- Not a coupon? Try ambassador referral code ---- */
+      const ambSnap = await get(dbRef(database, "ambassadors"));
+      const ambs = ambSnap.exists() ? ambSnap.val() : {};
+      const match = Object.entries<any>(ambs).find(
+        ([, a]) => (a.referralCode || "").toUpperCase() === code
+      );
+
+      if (!match) {
+        toast({ title: "Invalid code", variant: "destructive" });
         return;
       }
-      if (c.expiresAt && new Date(c.expiresAt) < new Date()) {
-        toast({ title: "Coupon expired", variant: "destructive" });
+      const [uid, amb] = match;
+      if (amb.status && amb.status !== "active") {
+        toast({ title: "This referral code is not active", variant: "destructive" });
         return;
       }
-      if (c.usageLimit && c.usedCount >= c.usageLimit) {
-        toast({ title: "Coupon usage limit reached", variant: "destructive" });
-        return;
-      }
-      setAppliedCoupon({
-        code: c.code,
-        discountType: c.discountType,
-        discountValue: c.discountValue,
+
+      setAppliedCoupon(null);
+      setAppliedReferral({ code, uid, name: amb.fullName || "Ambassador" });
+      toast({
+        title: "Referral code applied!",
+        description: `Referred by ${amb.fullName || "an ambassador"} — you saved ₹${Math.min(
+          REFERRAL_DISCOUNT,
+          APPLICATION_FEE
+        )}`,
       });
-      toast({ title: "Coupon applied!", description: `${code} — you saved ₹${
-        c.discountType === "flat"
-          ? Math.min(c.discountValue, APPLICATION_FEE)
-          : Math.round((APPLICATION_FEE * c.discountValue) / 100)
-      }` });
     } catch (e) {
       console.error(e);
-      toast({ title: "Could not apply coupon", variant: "destructive" });
+      toast({ title: "Could not apply code", variant: "destructive" });
     } finally {
       setCouponLoading(false);
     }
@@ -163,8 +201,10 @@ export default function Careers() {
 
   const removeCoupon = () => {
     setAppliedCoupon(null);
+    setAppliedReferral(null);
     setCouponInput("");
   };
+
 
   const [formData, setFormData] = useState({
     name: "",
