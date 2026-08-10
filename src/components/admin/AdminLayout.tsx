@@ -13,6 +13,7 @@ import {
   Menu,
   ShieldCheck,
   GraduationCap,
+  Receipt,
   X,
 } from "lucide-react";
 import { useAdmin } from "@/contexts/AdminContext";
@@ -39,6 +40,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { name: "Add Certificate", path: "/admin/ManageCertificates", icon: Briefcase },
     { name: "Add Offer Letter", path: "/admin/ManageOffers", icon: Briefcase },
     { name: "Coupons", path: "/admin/ManageCoupons", icon: Star },
+    { name: "Payments", path: "/admin/ManagePayments", icon: Receipt },
     { name: "Services", path: "/admin/services", icon: Briefcase },
     { name: "Projects", path: "/admin/projects", icon: FolderKanban },
     { name: "Team", path: "/admin/team", icon: Users },
