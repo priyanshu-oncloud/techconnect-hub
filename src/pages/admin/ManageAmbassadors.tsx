@@ -137,8 +137,18 @@ export default function ManageAmbassadors() {
       status,
       reviewedAt: new Date().toISOString(),
     });
+    const a: any = (apps as any)?.[id];
+    if (a?.email && (status === "approved" || status === "rejected")) {
+      notifyAmbassadorDecision(
+        a.email,
+        a.fullName || a.name || "there",
+        status,
+        a.referralCode
+      );
+    }
     toast({ title: `Application ${status}` });
   };
+
 
   const deleteApp = async (id: string) => {
     await remove(ref(database, `ambassador_applications/${id}`));

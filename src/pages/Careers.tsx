@@ -1,9 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
-import { ref as dbRef, push, get, runTransaction } from "firebase/database";
+import { ref as dbRef, push, get, set, runTransaction } from "firebase/database";
 import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 import { database, storage } from "@/firebase";
+import {
+  generateReceiptPDF,
+  makeInvoiceNo,
+  type ReceiptData,
+} from "@/utils/generateReceiptPDF";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -104,6 +109,9 @@ export default function Careers() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
 
+  const [receiptOpen, setReceiptOpen] = useState(false);
+  const [lastReceipt, setLastReceipt] = useState<ReceiptData | null>(null);
+
   /* ---- COUPON STATE ---- */
   const [couponInput, setCouponInput] = useState("");
   const [couponLoading, setCouponLoading] = useState(false);
@@ -128,9 +136,10 @@ export default function Careers() {
     : 0;
   const finalAmount = Math.max(0, APPLICATION_FEE - discount);
 
-  const applyCoupon = async () => {
-    const code = couponInput.trim().toUpperCase();
+  const applyCoupon = async (codeArg?: string) => {
+    const code = (codeArg ?? couponInput).trim().toUpperCase();
     if (!code) return;
+    if (codeArg) setCouponInput(code);
     setCouponLoading(true);
     try {
       const snap = await get(dbRef(database, `coupons/${code}`));
@@ -205,6 +214,20 @@ export default function Careers() {
     setCouponInput("");
   };
 
+  /* ---- AUTO-APPLY REFERRAL LINK (?ref=CODE) + CLICK TRACKING ---- */
+  useEffect(() => {
+    const ref = new URLSearchParams(window.location.search).get("ref");
+    if (!ref) return;
+    const code = ref.trim().toUpperCase();
+    applyCoupon(code);
+    runTransaction(dbRef(database, `referral_clicks/${code}/count`), (c) => (c || 0) + 1).catch(
+      () => {}
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+
+
 
   const [formData, setFormData] = useState({
     name: "",
@@ -229,6 +252,8 @@ export default function Careers() {
       const resumeUrl = await getDownloadURL(resumeRef);
 
       /* ---------- 2️⃣ SAVE TO DATABASE ---------- */
+      const invoiceNo = makeInvoiceNo();
+      const submittedAt = new Date().toISOString();
       const submission = {
         name: formatName(formData.name),
         email: formData.email,
@@ -239,6 +264,7 @@ export default function Careers() {
         resumeUrl,
         message: formData.message,
         paymentId,
+        invoiceNo,
         originalAmount: APPLICATION_FEE,
         couponCode: appliedCoupon?.code || null,
         referralCode: appliedReferral?.code || null,
@@ -246,10 +272,40 @@ export default function Careers() {
         discountApplied: discount,
         amountPaid: finalAmount,
         paymentStatus: finalAmount === 0 ? "free" : "paid",
-        submittedAt: new Date().toISOString(),
+        submittedAt,
       };
 
       await push(dbRef(database, "careers_applications"), submission);
+
+      /* ---------- 2️⃣a PAYMENT / INVOICE RECORD ---------- */
+      const receipt: ReceiptData = {
+        invoiceNo,
+        date: submittedAt,
+        name: submission.name,
+        email: submission.email,
+        phone: submission.phone,
+        position: submission.position,
+        paymentId,
+        originalAmount: APPLICATION_FEE,
+        discountApplied: discount,
+        amountPaid: finalAmount,
+        couponCode: submission.couponCode,
+        referralCode: submission.referralCode,
+        status: submission.paymentStatus,
+      };
+      try {
+        await set(dbRef(database, `payments/${invoiceNo}`), {
+          ...receipt,
+          emailKey: submission.email.trim().toLowerCase(),
+          refundStatus: "none",
+          type: "career_application",
+        });
+      } catch (e) {
+        console.warn("Payment record save failed:", e);
+      }
+      setLastReceipt(receipt);
+      setReceiptOpen(true);
+
 
       /* ---------- 2️⃣b INCREMENT COUPON USAGE ---------- */
       if (appliedCoupon) {
@@ -579,7 +635,7 @@ export default function Careers() {
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={applyCoupon}
+                      onClick={() => applyCoupon()}
                       disabled={couponLoading || !couponInput.trim()}
                     >
                       {couponLoading ? "Checking..." : "Apply"}
@@ -778,6 +834,61 @@ export default function Careers() {
         </div>
       </section>
 
+      {/* PAYMENT RECEIPT DIALOG */}
+      <Dialog open={receiptOpen} onOpenChange={setReceiptOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Application Submitted 🎉</DialogTitle>
+            <DialogDescription>
+              Your payment receipt is ready. Keep the invoice number for future
+              reference.
+            </DialogDescription>
+          </DialogHeader>
+
+          {lastReceipt && (
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Invoice No.</span>
+                <span className="font-semibold">{lastReceipt.invoiceNo}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Payment ID</span>
+                <span className="font-mono text-xs break-all text-right">
+                  {lastReceipt.paymentId}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Amount Paid</span>
+                <span className="font-semibold">₹{lastReceipt.amountPaid}</span>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-2 pt-2">
+                <Button
+                  className="flex-1"
+                  onClick={() => generateReceiptPDF(lastReceipt)}
+                >
+                  Download Receipt
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setReceiptOpen(false)}
+                >
+                  Close
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground text-center">
+                All your receipts are available anytime at{" "}
+                <a href="/receipts" className="underline">
+                  /receipts
+                </a>
+              </p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
     </div>
+
   );
 }

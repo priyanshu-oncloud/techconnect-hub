@@ -14,6 +14,7 @@ import Technologies from "./pages/Technologies";
 import Careers from "./pages/Careers";
 import StudentAmbassador from "./pages/StudentAmbassador";
 import Contact from "./pages/Contact";
+import Receipts from "./pages/Receipts";
 import CertificateVerification from "./pages/CertificateVerification";
 import CertificateInputPage from "./pages/CertificateInputPage";
 import NotFound from "./pages/NotFound";
@@ -31,6 +32,7 @@ import ManageOffers from "./pages/admin/ManageOffers";
 import ManageCoupons from "./pages/admin/ManageCoupons";
 import ManageAdmins from "./pages/admin/ManageAdmins";
 import ManageAmbassadors from "./pages/admin/ManageAmbassadors";
+import ManagePayments from "./pages/admin/ManagePayments";
 
 import { AmbassadorProvider, useAmbassador } from "@/contexts/AmbassadorContext";
 import AmbassadorLogin from "./pages/ambassador/Login";
@@ -78,6 +80,7 @@ const App = () => (
             <Route path="/certificate-verification/:certNo" element={<><Navigation /><CertificateVerification /><Footer /></>} />
             <Route path="/certificate-input" element={<><Navigation /><CertificateInputPage /><Footer /></>} />
             <Route path="/contact" element={<><Navigation /><Contact /><Footer /></>} />
+            <Route path="/receipts" element={<><Navigation /><Receipts /><Footer /></>} />
             
             {/* Admin Routes */}
             <Route path="/admin/login" element={<AdminLogin />} />
@@ -92,6 +95,7 @@ const App = () => (
             <Route path="/admin/ManageOffers" element={<ProtectedRoute><ManageOffers /></ProtectedRoute>} />
             <Route path="/admin/ManageCoupons" element={<ProtectedRoute><ManageCoupons /></ProtectedRoute>} />
             <Route path="/admin/ManageAmbassadors" element={<ProtectedRoute><ManageAmbassadors /></ProtectedRoute>} />
+            <Route path="/admin/ManagePayments" element={<ProtectedRoute><ManagePayments /></ProtectedRoute>} />
             <Route path="/admin/ManageAdmins" element={<ProtectedRoute><ManageAdmins /></ProtectedRoute>} />
 
             {/* Ambassador Portal (isolated) */}
