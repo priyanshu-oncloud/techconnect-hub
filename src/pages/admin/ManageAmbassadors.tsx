@@ -1,3 +1,4 @@
+import { notifyAmbassadorDecision } from "@/utils/notify";
 import { useEffect, useMemo, useState } from "react";
 import { ref, onValue, off, remove, update } from "firebase/database";
 import { database } from "@/firebase";
