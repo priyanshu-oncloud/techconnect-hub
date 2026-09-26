@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { MapPin, Briefcase as BriefcaseIcon2 } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { useJobs } from "@/lib/jobs";
 import { useEffect, useState } from "react";
 import axios from "axios";
