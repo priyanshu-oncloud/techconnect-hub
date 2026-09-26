@@ -33,6 +33,8 @@ import ManageCoupons from "./pages/admin/ManageCoupons";
 import ManageAdmins from "./pages/admin/ManageAdmins";
 import ManageAmbassadors from "./pages/admin/ManageAmbassadors";
 import ManagePayments from "./pages/admin/ManagePayments";
+import ManageJobs from "./pages/admin/ManageJobs";
+import JobDetail from "./pages/JobDetail";
 
 import { AmbassadorProvider, useAmbassador } from "@/contexts/AmbassadorContext";
 import AmbassadorLogin from "./pages/ambassador/Login";
@@ -76,6 +78,7 @@ const App = () => (
             <Route path="/projects" element={<><Navigation /><Projects /><Footer /></>} />
             <Route path="/technologies" element={<><Navigation /><Technologies /><Footer /></>} />
             <Route path="/careers" element={<><Navigation /><Careers /><Footer /></>} />
+            <Route path="/careers/jobs/:id" element={<><Navigation /><JobDetail /><Footer /></>} />
             <Route path="/student-ambassador" element={<><Navigation /><StudentAmbassador /><Footer /></>} />
             <Route path="/certificate-verification/:certNo" element={<><Navigation /><CertificateVerification /><Footer /></>} />
             <Route path="/certificate-input" element={<><Navigation /><CertificateInputPage /><Footer /></>} />
@@ -95,6 +98,7 @@ const App = () => (
             <Route path="/admin/ManageOffers" element={<ProtectedRoute><ManageOffers /></ProtectedRoute>} />
             <Route path="/admin/ManageCoupons" element={<ProtectedRoute><ManageCoupons /></ProtectedRoute>} />
             <Route path="/admin/ManageAmbassadors" element={<ProtectedRoute><ManageAmbassadors /></ProtectedRoute>} />
+            <Route path="/admin/ManageJobs" element={<ProtectedRoute><ManageJobs /></ProtectedRoute>} />
             <Route path="/admin/ManagePayments" element={<ProtectedRoute><ManagePayments /></ProtectedRoute>} />
             <Route path="/admin/ManageAdmins" element={<ProtectedRoute><ManageAdmins /></ProtectedRoute>} />
 

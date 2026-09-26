@@ -1,3 +1,6 @@
+import { Link } from "react-router-dom";
+import { MapPin, Briefcase as BriefcaseIcon2 } from "lucide-react";
+import { useJobs } from "@/lib/jobs";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -104,6 +107,8 @@ const formatName = (name: string) => {
 /* ---------------- COMPONENT ---------------- */
 
 export default function Careers() {
+  const { jobs: openJobs } = useJobs(true);
+  const allPositions = Array.from(new Set([...openJobs.map((j) => j.title), ...positions]));
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -226,7 +231,14 @@ export default function Careers() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-
+  /* ---- PREFILL POSITION FROM JOB DETAIL (?position=Title) ---- */
+  useEffect(() => {
+    const pos = new URLSearchParams(window.location.search).get("position");
+    if (pos) {
+      setFormData((f) => ({ ...f, position: pos.slice(0, 100) }));
+      setTimeout(() => document.getElementById("apply")?.scrollIntoView({ behavior: "smooth" }), 300);
+    }
+  }, []);
 
 
   const [formData, setFormData] = useState({
@@ -511,8 +523,34 @@ export default function Careers() {
         </div>
       </section>
 
+      {/* OPEN POSITIONS */}
+      {openJobs.length > 0 && (
+        <section className="py-24 bg-muted/30">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-3">Open Positions</h2>
+            <p className="text-center text-muted-foreground mb-10">Find a role that fits you.</p>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {openJobs.map((j) => (
+                <Link key={j.id} to={`/careers/jobs/${j.id}`} className="group">
+                  <Card className="p-6 h-full flex flex-col transition-all group-hover:shadow-lg group-hover:-translate-y-1">
+                    {j.department && <span className="text-xs font-medium text-primary mb-2">{j.department}</span>}
+                    <h3 className="text-xl font-semibold mb-2">{j.title}</h3>
+                    <div className="flex flex-wrap gap-3 text-xs text-muted-foreground mb-3">
+                      <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{j.location}</span>
+                      <span className="flex items-center gap-1"><Briefcase className="w-3 h-3" />{j.type}</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground line-clamp-3 flex-1">{j.summary}</p>
+                    <span className="mt-4 text-sm font-medium text-primary">View details →</span>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* FORM */}
-      <section className="py-24">
+      <section id="apply" className="py-24 scroll-mt-20">
         <div className="max-w-3xl mx-auto px-4">
           <Card className="p-8">
             <h2 className="text-3xl font-bold mb-6 text-center">Apply Now</h2>
@@ -566,7 +604,7 @@ export default function Careers() {
                     <SelectValue placeholder="Select Position" />
                   </SelectTrigger>
                   <SelectContent>
-                    {positions.map((pos, i) => (
+                    {allPositions.map((pos, i) => (
                       <SelectItem key={i} value={pos}>
                         {pos}
                       </SelectItem>
