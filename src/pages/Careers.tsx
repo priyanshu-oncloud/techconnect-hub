@@ -604,7 +604,7 @@ export default function Careers() {
                     <SelectValue placeholder="Select Position" />
                   </SelectTrigger>
                   <SelectContent>
-                    {allPositions.map((pos, i) => (
+                    {(formData.position && !allPositions.includes(formData.position) ? [formData.position, ...allPositions] : allPositions).map((pos, i) => (
                       <SelectItem key={i} value={pos}>
                         {pos}
                       </SelectItem>
